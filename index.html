@@ -648,8 +648,8 @@ body {
 <script>
 // ===== Configuration =====
 const STYLES = [
-  { id: 'pain', icon: '🔥', label: '痛点型', prefix: ['为什么你的', '做了N年才知道', '大多数人不知道的', '别让', '这3个'} },
-  { id: 'num', icon: '🔢', label: '数字型', prefix: ['8个', '5个', '10个', '3大', '7天', '2026年'} },
+  { id: 'pain', icon: '🔥', label: '痛点型', prefix: ['为什么你的', '做了N年才知道', '大多数人不知道的', '别让', '这3个'] },
+  { id: 'num', icon: '🔢', label: '数字型', prefix: ['8个', '5个', '10个', '3大', '7天', '2026年'] },
   { id: 'compare', icon: '⚔️', label: '对比型', prefix: ['对比', '差距原来在这里', 'vs', 'vs', '和普通人的区别是'] },
   { id: 'mystery', icon: '❓', label: '悬念型', prefix: ['为什么', '事情的真相是', '最扎心的真相', '后悔才知道', '看完我沉默了'] },
   { id: 'emotion', icon: '💔', label: '情感型', prefix: ['全职做N的第30天', '做了N才发现', '写给想放弃的', '深夜聊聊', 'N年N月终于'] },
@@ -843,7 +843,7 @@ function copyAll() {
   
   const text = allTitles.map((t, i) => `${i+1}. ${t.text}`).join('\n');
   navigator.clipboard.writeText(text).then(() => {
-    showToast('全部 ${allTitles.length} 个标题已复制 📋');
+    showToast(`全部 ${allTitles.length} 个标题已复制 📋`);
   }).catch(() => {
     const ta = document.createElement('textarea');
     ta.value = text;
@@ -851,7 +851,7 @@ function copyAll() {
     ta.select();
     document.execCommand('copy');
     document.body.removeChild(ta);
-    showToast('全部 ${allTitles.length} 个标题已复制 📋');
+    showToast(`全部 ${allTitles.length} 个标题已复制 📋`);
   });
 }
 
