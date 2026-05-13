@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>标题炼金术 · 自媒体爆款标题生成器</title>
 <style>
 /* ===== Reset & Base ===== */
@@ -880,9 +883,7 @@ function generate() {
 请为我生成 10 个关于"${promptTopic}"的爆款标题，要求：
 - 风格偏向：${promptStyles}
 - 适配平台：${promptPlatform}
-${promptPlatform === '小红书' ? '- 每行包含 1-2 个合适的 emoji
-- 控制在 20 字以内' : promptPlatform === '知乎' ? '- 以提问或悬念句式为主
-- 控制在 50 字以内' : ''}
+${promptPlatform === '小红书' ? '\n- 每行包含 1-2 个合适的 emoji\n- 控制在 20 字以内' : promptPlatform === '知乎' ? '\n- 以提问或悬念句式为主\n- 控制在 50 字以内' : ''}
 - 每个标题要有吸引点击的 hook
 - 避免过于标题党，保持可信度
 
@@ -986,6 +987,28 @@ function copyAll() {
     showToast(`全部 ${allTitles.length} 个标题已复制 📋`);
   });
 }
+
+// ===== Self-check (for cache debugging) =====
+(function safeWrap() {
+  // Wrap generate in try-catch so errors don't kill the button silently
+  const origGenerate = window.generate;
+  window.generate = function() {
+    try {
+      return origGenerate.apply(this, arguments);
+    } catch(e) {
+      console.error('TitleAlchemy error:', e);
+      showToast('出错了: ' + e.message + '。请 Ctrl+F5 强制刷新 💪');
+      const btn = document.querySelector('.btn-primary');
+      if (btn) {
+        btn.disabled = false;
+        document.getElementById('genIcon').textContent = '⚡';
+        document.getElementById('genIcon').className = '';
+        document.getElementById('genText').textContent = '生成标题';
+      }
+    }
+  };
+  console.log('TitleAlchemy v2 loaded -', new Date().toISOString().slice(11,19));
+})();
 
 // ===== Export CSV =====
 function exportCSV() {
