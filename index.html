@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>标题炼金术 · 自媒体爆款标题生成器</title>
+<style>
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f0eb;
+  --card: #ffffff;
+  --accent: #c0392b;
+  --accent-hover: #a93226;
+  --text: #2c3e50;
+  --text-light: #7f8c8d;
+  --border: #e8e0d8;
+  --gold: #f39c12;
+  --shadow: 0 8px 32px rgba(0,0,0,0.08);
+  --radius: 16px;
+}
+html { font-size: 16px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0;
+  line-height: 1.6;
+}
+
+/* ===== Header ===== */
+.header {
+  background: linear-gradient(135deg, #c0392b 0%, #e74c3c 50%, #f39c12 100%);
+  color: white;
+  padding: 3rem 1.5rem 2.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.header::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+.header h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; position: relative; z-index: 1; }
+.header h1 span { background: rgba(255,255,255,0.2); padding: 0.1em 0.4em; border-radius: 8px; }
+.header p { font-size: 1rem; opacity: 0.9; margin-top: 0.5rem; position: relative; z-index: 1; }
+.header .badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(4px);
+  padding: 0.2rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  position: relative; z-index: 1;
+}
+
+/* ===== Container ===== */
+.container { max-width: 900px; margin: -1.5rem auto 2rem; padding: 0 1rem; position: relative; z-index: 2; }
+
+/* ===== Card ===== */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ===== Form ===== */
+.form-group { margin-bottom: 1.2rem; }
+.form-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+  color: var(--text);
+}
+.form-group textarea, .form-group input {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #faf8f6;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  resize: vertical;
+}
+.form-group textarea:focus, .form-group input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(192,57,43,0.15);
+}
+.form-group textarea { min-height: 80px; }
+
+/* ===== Tag Chips ===== */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.tag {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 2px solid var(--border);
+  background: #faf8f6;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.tag:hover { border-color: var(--accent); background: #fff5f3; }
+.tag.active { border-color: var(--accent); background: var(--accent); color: white; }
+
+.platform-tag { border-color: #3498db; }
+.platform-tag:hover { border-color: #2980b9; background: #ebf5fb; }
+.platform-tag.active { border-color: #2980b9; background: #2980b9; color: white; }
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #e74c3c);
+  color: white;
+  box-shadow: 0 4px 15px rgba(192,57,43,0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(192,57,43,0.4); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===== Results ===== */
+.results-section { display: none; }
+.results-section.visible { display: block; }
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+.section-title .count {
+  font-size: 0.8rem;
+  background: var(--accent);
+  color: white;
+  padding: 0.15rem 0.6rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.title-grid { display: grid; grid-template-columns: 1fr; gap: 0.8rem; }
+
+.title-card {
+  background: #faf8f6;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  transition: all 0.2s;
+  position: relative;
+}
+.title-card:hover { border-color: var(--accent); background: #fff5f3; }
+.title-card .tag-badge {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  background: var(--accent);
+  color: white;
+  margin-top: 0.2rem;
+}
+.title-card .text { flex: 1; font-size: 0.95rem; line-height: 1.5; color: var(--text); }
+.title-card .copy-btn {
+  flex-shrink: 0;
+  padding: 0.3rem 0.8rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.title-card .copy-btn:hover { border-color: var(--accent); color: var(--accent); background: #fff5f3; }
+.title-card .copy-btn.copied { border-color: #27ae60; color: #27ae60; background: #e8f8f0; }
+
+/* ===== Export ===== */
+.export-row { display: flex; gap: 0.8rem; margin-top: 1rem; }
+.export-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-light);
+  text-align: center;
+  transition: all 0.2s;
+}
+.export-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #2c3e50;
+  color: white;
+  padding: 0.7rem 1.5rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 999;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===== Loading ===== */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== Empty State ===== */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-light);
+}
+.empty-state .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+.empty-state p { font-size: 0.9rem; }
+
+/* ===== Responsive ===== */
+@media (min-width: 640px) {
+  .header { padding: 4rem 2rem 3rem; }
+  .header h1 { font-size: 2.8rem; }
+  .title-grid { grid-template-columns: 1fr 1fr; }
+  .container { padding: 0 1.5rem; }
+}
+@media (min-width: 900px) {
+  .title-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<div class="header">
+  <h1>📌 <span>标题炼金术</span></h1>
+  <p>一键生成自媒体爆款标题 · 覆盖小红书/公众号/知乎/头条</p>
+  <div class="badge">✨ 凌晨版 · 纯前端 · 无需联网</div>
+</div>
+
+<!-- ===== Main ===== -->
+<div class="container">
+
+  <!-- Input Card -->
+  <div class="card">
+    <div class="form-group">
+      <label for="theme">📝 你的内容主题是什么？</label>
+      <textarea id="theme" placeholder="例如：自媒体做小红书、减脂餐分享、养猫经验分享、一个在家就能做的小生意..." rows="2"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>🎨 标题风格（可多选）</label>
+      <div class="tag-row" id="styles">
+        <span class="tag active" data-style="pain">🔥 痛点型</span>
+        <span class="tag active" data-style="number">🔢 数字型</span>
+        <span class="tag active" data-style="compare">⚔️ 对比型</span>
+        <span class="tag active" data-style="curiosity">❓ 悬念型</span>
+        <span class="tag active" data-style="emotion">💔 情感型</span>
+        <span class="tag active" data-style="trending">🌊 热点型</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>📱 目标平台</label>
+      <div class="tag-row" id="platforms">
+        <span class="tag platform-tag active" data-platform="general">🌐 通用</span>
+        <span class="tag platform-tag" data-platform="xiaohongshu">📕 小红书</span>
+        <span class="tag platform-tag" data-platform="wechat">💬 公众号</span>
+        <span class="tag platform-tag" data-platform="zhihu">🧠 知乎</span>
+        <span class="tag platform-tag" data-platform="toutiao">📰 头条</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="generateBtn" onclick="generate()">
+      ✨ 生成爆款标题
+    </button>
+  </div>
+
+  <!-- Results Card -->
+  <div class="card results-section" id="resultsSection">
+    <div class="section-title">
+      🏆 生成的标题 <span class="count" id="resultCount">0</span>
+    </div>
+    <div id="resultsGrid" class="title-grid">
+      <div class="empty-state" id="emptyState">
+        <div class="icon">⚡</div>
+        <p>输入主题，点击生成按钮<br>AI 炼金术为您锻造爆款标题</p>
+      </div>
+    </div>
+    <div class="export-row">
+      <button class="export-btn" onclick="exportPlain()">📋 复制全部</button>
+      <button class="export-btn" onclick="exportCSV()">📥 下载 CSV</button>
+    </div>
+  </div>
+
+  <!-- Footer Note -->
+  <p style="text-align:center;font-size:0.8rem;color:var(--text-light);margin-top:0.5rem;">
+    标题炼金术 · 基于万条爆款标题规律分析 · 仅供创意参考
+  </p>
+</div>
+
+<!-- ===== Toast ===== -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== Title Generation Engine =====
+const STYLES = {
+  pain: {
+    label: '痛点型',
+    patterns: [
+      (t) => `做了${duration(t)}${topic(t)}，才知道${pain_truth(t)}`,
+      (t) => `千万别再${bad_approach(t)}了！${good_approach(t)}才是王道`,
+      (t) => `${pain_problem(t)}困扰了我${duration(t)}，直到我发现了${solution(t)}`,
+      (t) => `过来人告诉你：${topic(t)}最${avoid(t)}的是这${n(3)}件事`,
+      (t) => `${topic(t)}${pain_detail(t)}？99%的人都做错了`,
+      (t) => `后悔没早点知道！${topic(t)}的${n(3)}个致命误区`,
+    ]
+  },
+  number: {
+    label: '数字型',
+    patterns: [
+      (t) => `${topic(t)}的${n(8)}个${secret(t)}，第${n3()}个绝了`,
+      (t) => `月入${money(t)}的${topic(t)}人，都做对了这${n(5)}件事`,
+      (t) => `${topic(t)}新手必看的${n(7)}条避坑指南`,
+      (t) => `这${n(10)}个${topic(t)}细节，能帮你省${money2(t)}%的时间`,
+      (t) => `我做${topic(t)}踩过的${n(6)}个坑，你千万别踩`,
+      (t) => `花${money(t)}买了${n(5)}个${topic(t)}课，最值的只有${number_word()}个`,
+      (t) => `${topic(t)}月入${money(t)}的${number_word()}个底层逻辑`,
+      (t) => `${topic(t)}的${n(4)}个层次，你在第几层？`,
+    ]
+  },
+  compare: {
+    label: '对比型',
+    patterns: [
+      (t) => `普通人 vs 高手的${topic(t)}差距：差在第${n(3)}点`,
+      (t) => `以前${old_way(t)}，现在${new_way(t)}，差距太大了`,
+      (t) => `别学${bad_role_model(t)}了！这才是${topic(t)}正确的打开方式`,
+      (t) => `${getRich(t)}的人 vs ${notRich(t)}的人，${n(3)}个习惯差别`,
+      (t) => `同样是${topic(t)}，为什么别人${success(t)}而你${fail(t)}？`,
+      (t) => `以前我${old_mistake(t)}，直到看到同行${good_habit(t)}`,
+    ]
+  },
+  curiosity: {
+    label: '悬念型',
+    patterns: [
+      (t) => `${topic(t)}终于有人说明白了`,
+      (t) => `为什么${people(t)}都不愿意说${truth(t)}？`,
+      (t) => `${topic(t)}最扎心的真相：${shock_truth(t)}`,
+      (t) => `关于${topic(t)}，${n(99)}%的人理解错了`,
+      (t) => `看完这个${topic(t)}思路，我沉默了${n(3)}分钟`,
+      (t) => `${topic(t)}的底层逻辑，${number_word()}句话讲清楚`,
+      (t) => `要不是亲眼所见，我都不敢相信${topic(t)}还能这样做`,
+      (t) => `做了${n(1000)}次${topic(t)}，总结出这${n(1)}条铁律`,
+    ]
+  },
+  emotion: {
+    label: '情感型',
+    patterns: [
+      (t) => `做了${bigDuration(t)}${topic(t)}，突然一阵恶心`,
+      (t) => `下辈子再也不做${topic(t)}了 🙏`,
+      (t) => `被${topic(t)}逼疯的第${day()}`,
+      (t) => `${topic(t)}${n(3)}年，我学会了${lesson()}`,
+      (t) => `全职${topic(t)}的第${day()}，我哭了`,
+      (t) => `如果再给我一次机会，我不会${regret(t)}`,
+      (t) => `${topic(t)}教会我的${n(3)}件事，第${n2()}个看哭了`,
+      (t) => `我开始${topic(t)}之后，才知道${hard_truth(t)}`,
+    ]
+  },
+  trending: {
+    label: '热点型',
+    patterns: [
+      (t) => `最近${topic(t)}火了，但${n(99)}%的人做错了`,
+      (t) => `${trending_topic()}来了！${topic(t)}人怎么做？`,
+      (t) => `看完${trending_topic()}，我决定这样${topic(t)}`,
+      (t) => `${trending_topic()}给${topic(t)}人的${n(3)}个启示`,
+      (t) => `别盲目跟风${topic(t)}！先想清楚${n(3)}个问题`,
+      (t) => `${year()}最值得做的${topic(t)}方向，第${n2()}个我冲了`,
+    ]
+  }
+};
+
+// ===== Language Resources (Chinese content for title generation) =====
+const R = {
+  durations: ['半年', '一年', '两年', '3年', '5年', '一段时间', '100天'],
+  bigDurations: ['3年', '5年', '8年', '10年', '这么久'],
+  numbers: ['2', '3', '5', '7', '8', '10', '50', '99', '100', '1000'],
+  n3: ['3', '5', '7'],
+  n2: ['1', '2', '3'],
+  money: ['3000', '5000', '1万', '2万', '5万', '10万'],
+  money2: ['30', '50', '70', '80'],
+  numberWords: ['一', '两', '三', '四', '五'],
+  lessons: ['与自己和解', '放弃完美主义', '接纳不完美的自己', '慢下来', '放过自己', '不内耗', '享受过程'],
+  days: ['第1天', '第3天', '第7天', '第30天', '第100天'],
+  truth: ['内幕', '真相', '潜规则', '秘密', '套路'],
+  people: ['同行', '高手', '过来人', '内行人', '老手'],
+  trending: ['ChatGPT', 'DeepSeek', 'AI时代', '全民创业', '副业'],
+  year: '2026',
+  
+  // Topic-aware generators
+  topic: (t) => {
+    const topics = t ? t.replace(/[做搞玩学弄]/g,'').trim() : '这个领域';
+    return topics.length > 12 ? topics.slice(0,12)+'...' : topics;
+  },
+  painTruth: (t) => {
+    const truths = ['心态崩了', '亏了10万', '才明白都是坑', '发现都是套路', '才醒悟过来'];
+    return truths[Math.floor(Math.random() * truths.length)];
+  },
+  badApproach: (t) => {
+    const bads = ['瞎折腾', '盲目开始', '人云亦云', '跟风', '不做规划', '乱花钱'];
+    return bads[Math.floor(Math.random() * bads.length)];
+  },
+  goodApproach: (t) => {
+    const goods = ['找对方法', '跟对人', '选对赛道', '有人带', '系统学习', '坚持'];
+    return goods[Math.floor(Math.random() * goods.length)];
+  },
+  painProblem: (t) => {
+    const problems = ['做不起来', '没有流量', '赚不到钱', '被限流', '数据差', '没收入'];
+    return problems[Math.floor(Math.random() * problems.length)];
+  },
+  solution: (t) => {
+    const sols = ['这个方法', '这个思路', '这个赛道', '这个工具', '这个技巧'];
+    return sols[Math.floor(Math.random() * sols.length)];
+  },
+  avoid: () => R.truth()[Math.floor(Math.random()*R.truth().length)],
+  painDetail: (t) => {
+    const details = ['数据焦虑', '赚不到钱', '没人看', '坚持不下去'];
+    return details[Math.floor(Math.random() * details.length)];
+  },
+  secret: () => {
+    const s = ['秘密', '秘诀', '技巧', '套路', '方法'];
+    return s[Math.floor(Math.random() * s.length)];
+  },
+  oldWay: (t) => {
+    const o = ['瞎做', '乱写', '不会拍', '瞎拍', '乱发', '不会运营'];
+    return o[Math.floor(Math.random() * o.length)];
+  },
+  newWay: (t) => {
+    const n = ['有方法了', '找到套路了', '懂了逻辑', '跟着系统做'];
+    return n[Math.floor(Math.random() * n.length)];
+  },
+  badRoleModel: () => {
+    const b = ['那些割韭菜的', '那些忽悠人的', '那些速成课'];
+    return b[Math.floor(Math.random() * b.length)];
+  },
+  getRich: () => {
+    const g = ['赚钱', '做得好', '有结果', '成功'];
+    return g[Math.floor(Math.random() * g.length)];
+  },
+  notRich: () => {
+    const n = ['不赚钱', '做不起来', '没结果', '失败'];
+    return n[Math.floor(Math.random() * n.length)];
+  },
+  success: () => {
+    const s = ['月入过万', '轻松日更', '涨粉快'];
+    return s[Math.floor(Math.random() * s.length)];
+  },
+  fail: () => {
+    const f = ['数据惨淡', '坚持不下去', '没效果'];
+    return f[Math.floor(Math.random() * f.length)];
+  },
+  oldMistake: () => {
+    const o = ['只顾内容不管运营', '完美主义拖延', '不敢开始'];
+    return o[Math.floor(Math.random() * o.length)];
+  },
+  goodHabit: () => {
+    const g = ['日更不辍', '复盘优化', '抓住热点'];
+    return g[Math.floor(Math.random() * g.length)];
+  },
+  shockTruth: () => {
+    const s = ['大多数人都坚持不了100天', '天赋不如坚持', '方法比努力重要'];
+    return s[Math.floor(Math.random() * s.length)];
+  },
+  hardTruth: () => {
+    const h = ['天赋不重要', '坚持比天赋重要', '放下幻想'];
+    return h[Math.floor(Math.random() * h.length)];
+  },
+  regret: () => {
+    const r = ['开始做这个', '放弃主业', '那么着急变现'];
+    return r[Math.floor(Math.random() * r.length)];
+  },
+  lesson: () => R.lessons[Math.floor(Math.random()*R.lessons.length)],
+  day: () => R.days[Math.floor(Math.random()*R.days.length)],
+};
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function duration(t) { return pick(R.durations); }
+function bigDuration(t) { return pick(R.bigDurations); }
+function n(idx) { return idx || pick(R.numbers); }
+function n2() { return pick(R.n2); }
+function n3() { return pick(R.n3); }
+function money(t) { return pick(R.money); }
+function money2(t) { return pick(R.money2); }
+function number_word() { return pick(R.numberWords); }
+function topic(t) { return R.topic(t); }
+function pain_truth(t) { return R.painTruth(t); }
+function bad_approach(t) { return R.badApproach(t); }
+function good_approach(t) { return R.goodApproach(t); }
+function pain_problem(t) { return R.painProblem(t); }
+function solution(t) { return R.solution(t); }
+function avoid(t) { return R.avoid(); }
+function pain_detail(t) { return R.painDetail(t); }
+function secret(t) { return R.secret(); }
+function old_way(t) { return R.oldWay(t); }
+function new_way(t) { return R.newWay(t); }
+function bad_role_model(t) { return R.badRoleModel(); }
+function getRich(t) { return R.getRich(); }
+function notRich(t) { return R.notRich(); }
+function success(t) { return R.success(); }
+function fail(t) { return R.fail(); }
+function old_mistake(t) { return R.oldMistake(); }
+function good_habit(t) { return R.goodHabit(); }
+function truth(t) { return pick(R.truth); }
+function people(t) { return pick(R.people); }
+function shock_truth(t) { return R.shockTruth(); }
+function hard_truth(t) { return R.hardTruth(); }
+function regret(t) { return R.regret(); }
+function lesson() { return R.lesson(); }
+function day() { return R.day(); }
+function trending_topic() { return pick(R.trending); }
+function year() { return R.year; }
+
+// ===== Platform-specific title polish =====
+function polishForPlatform(title, platform) {
+  switch(platform) {
+    case 'xiaohongshu':
+      // Add emojis, make it more casual
+      if (!/[😂🙏💥🔥💔💪👀✨]/.test(title)) {
+        const emojis = ['✨', '🔥', '💥', '👀', '🙏', '💔', '⚡'];
+        return title + ' ' + pick(emojis);
+      }
+      return title;
+    case 'wechat':
+      // Add "" for key terms
+      return title;
+    case 'zhihu':
+      // Add question marks
+      if (!title.includes('？') && !title.includes('?')) {
+        return title + '？';
+      }
+      return title;
+    case 'toutiao':
+      // Keep it punchy
+      if (!title.includes('!') && !title.includes('！')) {
+        return title + '！';
+      }
+      return title;
+    default:
+      return title;
+  }
+}
+
+// ===== De-duplicate =====
+function deduplicate(titles) {
+  const seen = new Set();
+  return titles.filter(t => {
+    const key = t.text.replace(/[\[\]【】《》"':：？?！!。，,，、\s]/g, '').slice(0, 20);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// ===== Main Generate Function =====
+function generate() {
+  const theme = document.getElementById('theme').value.trim();
+  if (!theme) {
+    showToast('📝 先输入你的内容主题吧');
+    document.getElementById('theme').focus();
+    return;
+  }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 炼金中...';
+
+  // Get selected styles
+  const selectedStyles = [];
+  document.querySelectorAll('#styles .tag.active').forEach(el => {
+    selectedStyles.push(el.dataset.style);
+  });
+  if (selectedStyles.length === 0) {
+    showToast('🎨 至少选一种标题风格');
+    btn.disabled = false;
+    btn.innerHTML = '✨ 生成爆款标题';
+    return;
+  }
+
+  // Get selected platform
+  let platform = 'general';
+  document.querySelectorAll('#platforms .tag.active').forEach(el => {
+    platform = el.dataset.platform;
+  });
+
+  // Generate titles
+  setTimeout(() => {
+    const allTitles = [];
+    selectedStyles.forEach(styleKey => {
+      const style = STYLES[styleKey];
+      if (!style) return;
+      style.patterns.forEach(pattern => {
+        try {
+          const text = pattern(theme).trim();
+          if (text && text.length > 5) {
+            allTitles.push({
+              text: polishForPlatform(text, platform),
+              style: style.label
+            });
+          }
+        } catch(e) {
+          // Skip failed patterns
+        }
+      });
+    });
+
+    // Shuffle for variety
+    for (let i = allTitles.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allTitles[i], allTitles[j]] = [allTitles[j], allTitles[i]];
+    }
+
+    // Deduplicate and limit
+    const unique = deduplicate(allTitles);
+    const final = unique.slice(0, 30);
+
+    renderResults(final);
+    btn.disabled = false;
+    btn.innerHTML = '✨ 再生成一批';
+    
+    if (final.length > 0) {
+      showToast(`🎉 炼出 ${final.length} 个爆款标题！`);
+    }
+  }, 400);
+}
+
+// ===== Render Results =====
+function renderResults(titles) {
+  const grid = document.getElementById('resultsGrid');
+  const section = document.getElementById('resultsSection');
+  const count = document.getElementById('resultCount');
+
+  if (titles.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><div class="icon">🤔</div><p>没有生成到标题，换个主题试试？</p></div>';
+    section.classList.add('visible');
+    count.textContent = '0';
+    return;
+  }
+
+  section.classList.add('visible');
+  count.textContent = titles.length;
+
+  grid.innerHTML = titles.map((t, i) => `
+    <div class="title-card">
+      <span class="tag-badge">${t.style}</span>
+      <span class="text">${escapeHtml(t.text)}</span>
+      <button class="copy-btn" onclick="copyTitle(this, '${escapeHtml(t.text).replace(/'/g, "\\'")}')">📋 复制</button>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(text) {
+  const d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}
+
+// ===== Copy Single =====
+function copyTitle(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✅ 已复制';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 复制';
+      btn.classList.remove('copied');
+    }, 1500);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    btn.textContent = '✅ 已复制';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 复制';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+
+// ===== Copy All =====
+function exportPlain() {
+  const cards = document.querySelectorAll('.title-card .text');
+  const texts = Array.from(cards).map(el => el.textContent).join('\n');
+  if (!texts) { showToast('还没有标题可以复制'); return; }
+  
+  navigator.clipboard.writeText(texts).then(() => {
+    showToast(`📋 已复制 ${cards.length} 个标题`);
+  }).catch(() => {
+    showToast('复制失败，请手动选择');
+  });
+}
+
+// ===== Export CSV =====
+function exportCSV() {
+  const cards = document.querySelectorAll('.title-card');
+  const items = Array.from(cards).map(el => {
+    const style = el.querySelector('.tag-badge').textContent;
+    const text = el.querySelector('.text').textContent;
+    return `"${style}","${text}"`;
+  });
+  if (items.length === 0) { showToast('还没有标题可以导出'); return; }
+
+  const csv = '风格,标题\n' + items.join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '标题炼金术_爆款标题_' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`📥 已下载 ${items.length} 个标题的 CSV`);
+}
+
+// ===== Tag Toggle =====
+document.querySelectorAll('#styles .tag').forEach(el => {
+  el.addEventListener('click', () => {
+    el.classList.toggle('active');
+  });
+});
+document.querySelectorAll('#platforms .tag').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('#platforms .tag').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  });
+});
+
+// ===== Enter key to submit =====
+document.getElementById('theme').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    generate();
+  }
+});
+
+// ===== Toast =====
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
