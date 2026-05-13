@@ -550,6 +550,69 @@ body {
 .title-item:nth-child(8) { animation-delay: 0.16s; }
 .title-item:nth-child(9) { animation-delay: 0.18s; }
 .title-item:nth-child(10) { animation-delay: 0.20s; }
+
+/* ===== AI Prompt Box ===== */
+.prompt-box {
+  margin-top: 1.2rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 1.2rem;
+}
+
+.prompt-box .prompt-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.6rem;
+}
+
+.prompt-box .prompt-label .tag {
+  background: rgba(99,102,241,0.2);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  color: var(--accent-1);
+  font-weight: 600;
+}
+
+.prompt-box textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: var(--radius);
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.prompt-box textarea:focus {
+  border-color: var(--accent-1);
+}
+
+.prompt-box .prompt-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.prompt-box .hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
+  line-height: 1.5;
+}
+
+.prompt-box .hint strong {
+  color: var(--text-secondary);
+}
+
 </style>
 </head>
 <body>
@@ -617,6 +680,29 @@ body {
     </div>
   </div>
 
+  <!-- Prompt Guide Card -->
+  <div class="card" id="promptGuide">
+    <div class="card-title"><span class="dot"></span> 🧠 把提示词喂给 AI</div>
+    <p style="font-size:0.82rem;color:var(--text-secondary);line-height:1.6;margin-bottom:0.5rem;">
+      上面的标题是模板生成的。如果你想要更高质量的标题，把下面这段提示词复制到 
+      <strong>DeepSeek / 豆包 / ChatGPT</strong>，让 AI 帮你写更好的版本。
+    </p>
+    <div class="prompt-box" id="promptBox">
+      <div class="prompt-label">
+        <span>🤖 优化后的 AI 提示词</span>
+        <span class="tag">NEW</span>
+      </div>
+      <textarea id="promptText" readonly placeholder="先生成标题，这里会显示可供 AI 使用的提示词…"></textarea>
+      <div class="prompt-actions">
+        <button class="btn btn-sm btn-ghost" onclick="copyPrompt()">📋 复制提示词</button>
+      </div>
+      <div class="hint">
+        💡 提示词已根据你选择的 <strong id="promptStyleLabel">全部风格</strong> 和 <strong id="promptPlatformLabel">通用平台</strong> 优化。
+        点击「复制提示词」→ 黏贴到 AI 对话窗口即可使用。
+      </div>
+    </div>
+  </div>
+
   <!-- Results -->
   <div class="card" id="resultsCard" style="display:none;">
     <div class="results-header">
@@ -643,7 +729,10 @@ body {
 <div class="toast" id="toast"></div>
 
 <!-- Footer -->
-<div class="footer">标题炼金术 · 自媒体人的标题工具箱</div>
+<div class="footer">
+  标题炼金术 · 自媒体人的标题工具箱<br>
+  <span style="opacity:0.5;">用 AI 写标题，省下时间做内容</span>
+</div>
 
 <script>
 // ===== Configuration =====
@@ -778,6 +867,36 @@ function generate() {
     // Shuffle
     allTitles.sort(() => Math.random() - 0.5);
     
+    // Build AI prompt
+    const promptTopic = topic;
+    const promptPlatform = currentPlatform;
+    const promptStyles = stylesToUse.map(id => STYLES.find(s => s.id === id)).filter(Boolean).map(s => s.label).join('、');
+    
+    // Generate example titles as references
+    const exampleTitles = allTitles.slice(0, 3).map(t => t.text);
+    
+    const aiPrompt = `你是一位资深自媒体运营专家，精通${promptPlatform}平台的标题创作。
+
+请为我生成 10 个关于"${promptTopic}"的爆款标题，要求：
+- 风格偏向：${promptStyles}
+- 适配平台：${promptPlatform}
+${promptPlatform === '小红书' ? '- 每行包含 1-2 个合适的 emoji
+- 控制在 20 字以内' : promptPlatform === '知乎' ? '- 以提问或悬念句式为主
+- 控制在 50 字以内' : ''}
+- 每个标题要有吸引点击的 hook
+- 避免过于标题党，保持可信度
+
+参考示例风格（仅供参考长度和语气）：
+${exampleTitles.map((t, i) => `${i+1}. ${t}`).join('\n')}
+
+直接输出 10 个标题，每行一个，不要序号。`;
+    
+    const promptTextarea = document.getElementById('promptText');
+    if (promptTextarea) promptTextarea.value = aiPrompt;
+    
+    document.getElementById('promptStyleLabel').textContent = promptStyles || '全部风格';
+    document.getElementById('promptPlatformLabel').textContent = promptPlatform;
+    
     renderResults();
     
     btn.disabled = false;
@@ -835,6 +954,19 @@ function copyTitle(index) {
     document.execCommand('copy');
     document.body.removeChild(ta);
     showToast('已复制到剪贴板 📋');
+  });
+}
+
+// ===== Copy Prompt =====
+function copyPrompt() {
+  const el = document.getElementById('promptText');
+  if (!el.value) { showToast('先生成标题，再复制提示词 😅'); return; }
+  navigator.clipboard.writeText(el.value).then(() => {
+    showToast('提示词已复制，黏贴到 AI 就能用 ✨');
+  }).catch(() => {
+    el.select();
+    document.execCommand('copy');
+    showToast('提示词已复制，黏贴到 AI 就能用 ✨');
   });
 }
 
