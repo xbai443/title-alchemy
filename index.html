@@ -67,6 +67,25 @@ textarea::placeholder{color:#555}
 <h1>🧪 标题炼金术</h1>
 <p>AI 爆款标题生成器</p>
 <div class="badge">✨ 由 DeepSeek AI 驱动</div>
+<button id="settingsBtn" style="position:absolute;top:8px;right:16px;background:transparent;border:none;color:var(--dim);font-size:20px;cursor:pointer;padding:8px;border-radius:8px;transition:all.15s" onclick="toggleSettings()" title="设置 API Key">⚙️</button>
+</div>
+
+<!-- SETTINGS -->
+<div class="card" id="settingsCard" style="display:none">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<h3 style="font-size:15px;color:var(--text)">🔑 API 设置</h3>
+<button onclick="toggleSettings()" style="background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:13px">关闭 ✕</button>
+</div>
+<p class="text-sm text-dim" style="margin-bottom:10px">填入你的 DeepSeek API Key。Key 仅存储在本地浏览器，不会上传到任何服务器。</p>
+<input id="apiKeyInput" type="password" placeholder="sk-... 输入你的 DeepSeek API Key" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:12px 14px;font-size:14px;outline:none;transition:border-color.2s;margin-bottom:10px" />
+<div style="display:flex;gap:8px">
+<button id="saveKeyBtn" onclick="saveApiKey()" class="btn-gen" style="padding:10px;font-size:14px;margin:0;flex:1">💾 保存 Key</button>
+<button onclick="document.getElementById('apiKeyInput').value='';saveApiKey();" style="flex:0;padding:10px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--dim);cursor:pointer;font-size:13px">清除</button>
+</div>
+<div id="keyStatus" class="text-sm" style="margin-top:8px"></div>
+<div class="text-sm text-dim" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+每日使用：<span id="usageCount">0</span> / 50 次
+</div>
 </div>
 
 <!-- INPUT -->
@@ -120,7 +139,23 @@ textarea::placeholder{color:#555}
 
 <script>
 
-const API_KEY = 'sk-fc5da065666f4f6497a0c6ced9db0502';
+// API Key management
+function getApiKey() { return localStorage.getItem('tApiKey') || ''; }
+function setApiKey(k) { localStorage.setItem('tApiKey', k); }
+
+// Daily usage tracking
+function getUsageToday() {
+  const d = new Date().toDateString();
+  const s = JSON.parse(localStorage.getItem('tUsage') || '{}');
+  return s.date === d ? (s.n || 0) : 0;
+}
+function addUsage() {
+  const d = new Date().toDateString();
+  const s = JSON.parse(localStorage.getItem('tUsage') || '{}');
+  if (s.date !== d) { localStorage.setItem('tUsage', JSON.stringify({date:d, n:1})); }
+  else { s.n = (s.n || 0) + 1; localStorage.setItem('tUsage', JSON.stringify(s)); }
+}
+const DAILY_LIMIT = 50;
 const PLATFORMS = {"xiaohongshu": {"name": "小红书", "desc": "笔记式 · 生活化 · 高互动", "styles": ["数字式", "悬念式", "痛点式", "对比式", "干货清单", "情感共鸣", "emoji式"]}, "douyin": {"name": "抖音", "desc": "短视频 · 强钩子 · 完播率", "styles": ["钩子式", "悬念式", "反差式", "情绪式", "互动式", "口播式"]}, "gongzhonghao": {"name": "公众号", "desc": "长文 · 观点驱动 · 转发率", "styles": ["观点式", "故事式", "干货式", "热点式", "情感式", "悬念式"]}, "zhihu": {"name": "知乎", "desc": "问答体 · 深度 · 可信度", "styles": ["问题式", "对比式", "经验分享", "深度分析", "反常识"]}, "bilibili": {"name": "B站", "desc": "年轻化 · 吐槽 · 娱乐性", "styles": ["吐槽式", "教程式", "测评式", "盘点式", "整活式"]}, "smart": {"name": "智能推荐", "desc": "AI自动匹配最佳风格", "styles": ["auto"]}};
 const STYLE_PROMPTS = {"数字式": "用具体数字（3个、5步、10天）增加信服力和点击欲", "悬念式": "埋钩子，让读者忍不住点进来揭秘", "痛点式": "戳中用户的焦虑、困惑或失败经历", "对比式": "通过对比（以前/现在、别人/我、高手/新手）制造反差", "干货清单": "强调整理好的实用内容，降低决策成本", "情感共鸣": "让读者觉得「这就是我！」，引发情绪共振", "emoji式": "巧妙运用emoji增加视觉冲击力和情绪表达", "钩子式": "前3秒抓住注意力，制造不得不看完的悬念", "反差式": "制造强烈的认知反差或结果对比", "情绪式": "放大某种强烈情绪（愤怒、感动、震惊、好笑）", "互动式": "引导用户评论、转发、@好友", "口播式": "适合口语化表达，像在跟朋友聊天", "观点式": "提出鲜明、有争议的观点，让人想反驳或认同", "故事式": "用一个好故事开头，引发好奇和代入感", "热点式": "蹭当下热门话题或事件，借势引流", "问题式": "用提问开头，直击用户想解决的问题", "经验分享": "强调是亲身经历的真实经验，增加信任感", "深度分析": "承诺深入剖析，满足用户想看懂的需求", "反常识": "挑战用户已有认知，制造「真的假的？」效果", "吐槽式": "用幽默吐槽的方式引起共鸣", "教程式": "强调手把手教你，降低学习门槛", "测评式": "对比评测，帮用户做决策", "盘点式": "整理合集，满足收集癖和错过恐惧", "整活式": "创意脑洞，出人意料，适合B站风格", "auto": "根据用户内容和平台特点，自动选择最合适的风格"};
 const PLATFORM_SYSTEM = {"xiaohongshu": "你是小红书爆款标题专家。小红书标题要点：口语化、生活化、善用emoji、有具体数字或成果、给读者「收藏价值」感。首行即黄金3秒。", "douyin": "你是抖音爆款标题专家。抖音标题要点：前3个字就要钩住人、制造悬念或情绪冲击、口语化、善用「你」字拉近距离、暗示看完有收获。", "gongzhonghao": "你是公众号爆款标题专家。公众号标题要点：观点鲜明、有争议性或话题性、善用反问/设问、承诺价值、制造身份认同。", "zhihu": "你是知乎爆款标题专家。知乎标题要点：问题驱动、强调专业性和可信度、善用「如何」「怎样」「为什么」开头、承诺深度。", "bilibili": "你是B站爆款标题专家。B站标题要点：年轻化语言、吐槽感、善用「!」、够夸张但不假、有整活/硬核感。", "smart": "你是爆款标题专家。根据用户内容和平台特点，自动选择最合适的标题风格。你能灵活运用各种爆款标题技巧。"};
@@ -150,6 +185,12 @@ async function generate() {
   const topic = document.getElementById('topicInput').value.trim();
   if (!topic) { showToast('\u8bf7\u5148\u8f93\u5165\u6587\u7ae0\u4e3b\u9898\u6216\u5185\u5bb9'); return; }
 
+  const key = getApiKey();
+  if (!key) { showToast('\u8bf7\u5148\u8bbe\u7f6e DeepSeek API Key\uff08\u2699\ufe0f\uff09'); document.getElementById('settingsBtn').style.color='#ef4444'; document.getElementById('settingsCard').style.display='block'; return; }
+  const used = getUsageToday();
+  if (used >= 50) { showToast('\u4eca\u65e5\u989d\u5ea6\u5df2\u7528\u5b8c\uff0850/50\uff09\uff0c\u660e\u5929\u518d\u6765\u5427'); return; }
+  updateUsageDisplay();
+
   const platform = document.getElementById('platformSelect').value;
   const style = document.getElementById('styleSelect').value;
   const btn = document.getElementById('genBtn');
@@ -172,7 +213,7 @@ async function generate() {
   try {
     const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
       body:JSON.stringify({
         model:'deepseek-chat',
         messages:[{role:'system',content:sys},{role:'user',content:topic}],
@@ -203,7 +244,8 @@ async function generate() {
       ct.appendChild(card);
       
     });
-
+    addUsage();
+    updateUsageDisplay();
     const rec = {id:Date.now(),topic:topic.slice(0,45)+(topic.length>45?'...':''),platform:pn,style:sn,titles:items,time:new Date().toLocaleString()};
     history.unshift(rec);
     if(history.length>50) history.pop();
@@ -281,6 +323,38 @@ function renderHistory() {
   }
 }
 renderHistory();
+// Settings functions
+function toggleSettings() {
+  var c = document.getElementById('settingsCard');
+  c.style.display = c.style.display === 'none' ? 'block' : 'none';
+  var sk = getApiKey();
+  if (sk) {
+    document.getElementById('apiKeyInput').value = sk;
+    document.getElementById('keyStatus').innerHTML = '<span style="color:#10b981">\u2705 Key \u5df2\u8bbe\u7f6e</span>';
+  }
+  updateUsageDisplay();
+}
+function saveApiKey() {
+  var val = document.getElementById('apiKeyInput').value.trim();
+  if (!val) { setApiKey(''); document.getElementById('keyStatus').innerHTML = '<span style="color:#888">Key \u5df2\u6e05\u9664</span>'; return; }
+  if (!val.startsWith('sk-')) { document.getElementById('keyStatus').innerHTML = '<span style="color:#ef4444">\u274c Key \u683c\u5f0f\u4e0d\u5bf9</span>'; return; }
+  setApiKey(val);
+  document.getElementById('keyStatus').innerHTML = '<span style="color:#10b981">\u2705 Key \u4fdd\u5b58\u6210\u529f!</span>';
+  document.getElementById('settingsBtn').style.color = '';
+  updateUsageDisplay();
+  showToast('\u2705 API Key \u5df2\u4fdd\u5b58');
+  setTimeout(function(){ document.getElementById('settingsCard').style.display = 'none'; }, 800);
+}
+function updateUsageDisplay() {
+  var el = document.getElementById('usageCount');
+  if (el) { el.textContent = getApiKey() ? getUsageToday() : '--'; }
+}
+// Init on page load
+(function() {
+  var sk = getApiKey();
+  if (sk) { updateUsageDisplay(); }
+})();
+
 // Demo mode: auto-fill and generate from URL params
 (function() {
   const params = new URLSearchParams(window.location.search);
