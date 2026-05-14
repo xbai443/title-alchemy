@@ -60,6 +60,7 @@ textarea::placeholder{color:#555}
 </style>
 </head>
 <body>
+
 <div class="container">
 
 <!-- HEADER -->
@@ -314,7 +315,7 @@ function renderHistory() {
       const topicSafe=r.topic.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
       const titlesHtml=r.titles.map(t=>'<span class="tag">'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')+'</span>').join('');
       const onClick='document.getElementById("topicInput").value="'+escapeAttr(r.topic.replace(/\.\.\.$/,''))+'";document.getElementById("topicInput").focus();showToast("\u4e3b\u9898\u5df2\u586b\u5165");';
-      return '<div class="history-item"><div class="history-item-header"><span class="history-meta">'+r.platform+' \u00b7 '+r.style+' \u00b7 '+r.time+'</span></div><div class="history-topic" onclick=\u005c''+onClick+\u005c'>'+topicSafe+'</div><div>'+titlesHtml+'</div></div>';
+      return '<div class="history-item"><div class="history-item-header"><span class="history-meta">'+r.platform+' \u00b7 '+r.style+' \u00b7 '+r.time+'</span></div><div class="history-topic" onclick=\'+onClick+\'>'+topicSafe+'</div><div>'+titlesHtml+'</div></div>';
     }).join('');
   }
   if(favorites.length===0){fl.innerHTML='<div class="history-empty">\u8fd8\u6ca1\u6709\u6536\u85cf\u7684\u6807\u9898</div>';}
@@ -353,6 +354,18 @@ function updateUsageDisplay() {
 (function() {
   var sk = getApiKey();
   if (sk) { updateUsageDisplay(); }
+  // Debug: auto-open settings from URL param
+  var p = new URLSearchParams(window.location.search);
+  if (p.get('showSettings') === '1') {
+    setTimeout(function(){
+      var c = document.getElementById('settingsCard');
+      if (c) { c.style.display = 'block'; console.log('Settings opened by URL param'); }
+    }, 500);
+  }
+  if (p.get('test') === '1') {
+    document.title = 'TEST_MODE_ACTIVE';
+    document.getElementById('topicInput').value = 'TEST MODE WORKING';
+  }
 })();
 
 // Demo mode: auto-fill and generate from URL params
